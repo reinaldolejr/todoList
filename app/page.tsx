@@ -1,95 +1,94 @@
+'use client';
+
 import Image from 'next/image'
-import styles from './page.module.css'
+import React, { useState } from 'react';
+import Todo from './components/todo';
+import { Box, Container } from '@mui/material';
+import { maxHeaderSize } from 'http';
+import TodoForm from './components/todoForm';
+import Search from './components/search';
 
-export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.tsx</code>
-        </p>
+
+const Home = () => {
+    const [todoList, setTodoList] = useState<todoModel[] | null>([{
+        id: 1,
+        text: 'Clean House friday',
+        category: 'Home',
+        isCompleted: false,
+    },
+    {
+        id: 2,
+        text: 'Home Work to tuesday',
+        category: 'College',
+        isCompleted: false,
+    },
+    {
+        id: 3,
+        text: 'Code review of john',
+        category: 'Work',
+        isCompleted: false,
+    }]);
+
+    const [search, setSearch] = useState<string>("");
+
+    const addTodo = (text: string, category: string): void => {
+        let idMax: number = Math.max.apply(0, todoList?.map<number>(x => x.id) || []);
+
+        const newTodoList: todoModel[] = [
+            ...todoList || [],
+            {
+                id: idMax++,
+                text,
+                category,
+                isCompleted: false,
+            }
+        ];
+
+        setTodoList(newTodoList);
+    }
+
+    const deleteTodo = (id: number): void => {
+
+        if (!todoList) return;
+        const newTodoList: todoModel[] = [...todoList]
+            .filter((item: todoModel) => item.id != id ? item : null);
+
+        setTodoList(newTodoList);
+    }
+
+    const doneTodo = (id: number): void => {
+
+        if (!todoList) return;
+        const index: number = todoList.findIndex(todo => todo.id == id);
+        const todo: todoModel = todoList[index];
+        todo.isCompleted = !todo.isCompleted;
+        const newTodoList: todoModel[] = [...todoList];
+        newTodoList.splice(index, 1, todo);
+
+        setTodoList(newTodoList);
+    }
+
+
+    return (
         <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+            <Container>
+                <Search search={search} setSearch={setSearch} ></Search>
+                <h2>List</h2>
+                <Box>
+                    {todoList?.filter((item) => item.text.toLowerCase().includes(search.toLowerCase()))
+                        .map((todo: todoModel) => (
+                            <Todo todo={todo} key={todo.id} deleteTodo={deleteTodo} doneTodo={doneTodo} />
+                        ))}
+                </Box>
+
+                <h2>Create Task</h2>
+                <Box>
+                    <TodoForm addTodo={addTodo} ></TodoForm>
+                </Box>
+            </Container>
         </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore the Next.js 13 playground.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+    )
 }
+
+export default Home
+
